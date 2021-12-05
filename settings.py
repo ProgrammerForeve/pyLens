@@ -1,3 +1,5 @@
+FILE_NAME = "lens.png"
+
 WINDOW = {
     "title": "pyLens",
     "width": 640,
@@ -19,8 +21,10 @@ COLORS = {
     },
     "rays":{
         "ray0": "black",
+        "ray0_reflection": "red",
         "ray1_1": "black",
         "ray1_2": "black",
+        "ray1_reflection": "red",
         "ray2_1": "black",
         "ray2_2": "black",
     },

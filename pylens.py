@@ -1,7 +1,18 @@
 import settings as settings
+
 import graphics as graph
+from PIL import ImageGrab
 import math as math
 
+ 
+def save(widget, file_name):
+    # https://www.cyberforum.ru/python-graphics/thread2528952.html
+    root = widget.master
+    x = root.winfo_rootx()+widget.winfo_x()
+    y = root.winfo_rooty()+widget.winfo_y()
+    x1 = x + widget.winfo_width()
+    y1 = y + widget.winfo_height()
+    ImageGrab.grab().crop((x, y, x1, y1)).save(file_name)
 
 def draw_main_optical_axes(window, color="black", width=1):
     """Draw main optical axes"""
@@ -127,12 +138,12 @@ def get_point(p0, r, phi):
     y = y0 + r*math.sin(phi)
     return graph.Point(x,y)
 
-def draw_ray0(window, from_point, color="black", width=1):
+def draw_ray0(window, from_point, color="black", width=1, color_reflection="red", width_reflection=1):
     x1 = from_point.x
     y1 = from_point.y
     x2 = window.getWidth() // 2
     y2 = window.getHeight() // 2
-    print("drawing ray mock")
+
     (r, phi) = get_r_phi(graph.Point(x1,y1), graph.Point(x2,y2))
     r = max(window.getWidth(), window.getHeight())
     to_point = get_point(from_point, r, phi)
@@ -141,9 +152,17 @@ def draw_ray0(window, from_point, color="black", width=1):
     ray0.setOutline(color=color)
     ray0.setWidth(width)
     ray0.draw(window)
-    return ray0
 
-def draw_ray1(window, from_point, focus_point, color1="black", width1=1, color2="black", width2=1):
+    phi += math.pi
+    to_point = get_point(from_point, r, phi)
+    
+    ray0_reflection = graph.Line(from_point, to_point)
+    ray0_reflection.setOutline(color=color_reflection)
+    ray0_reflection.setWidth(width_reflection)
+    ray0_reflection.draw(window)
+    return (ray0, ray0_reflection)
+
+def draw_ray1(window, from_point, focus_point, color1="black", width1=1, color2="black", width2=1, color_reflection="red", width_reflection=1):
     x1 = from_point.x
     y1 = from_point.y
     x2 = window.getWidth() // 2
@@ -165,8 +184,16 @@ def draw_ray1(window, from_point, focus_point, color1="black", width1=1, color2=
     ray1_2.setOutline(color=color2)
     ray1_2.setWidth(width2)
     ray1_2.draw(window)
+
+    phi += math.pi
+    to_point = get_point(in_lens_point, r, phi)
     
-    return (ray1_1, ray1_2)
+    ray1_reflection = graph.Line(in_lens_point, to_point)
+    ray1_reflection.setOutline(color=color_reflection)
+    ray1_reflection.setWidth(width_reflection)
+    ray1_reflection.draw(window)
+    
+    return (ray1_1, ray1_2, ray1_reflection)
 
 def draw_focus(window, F, color1="green", width1=1, color2="green4", width2=1, radius=5):
     f1x = (1+F)*window.getWidth()//2
@@ -227,23 +254,11 @@ def main():
     lens = draw_lens(window, settings.COLORS["lens"]["converging"], 3)
     obj = draw_object(window, h, d, settings.COLORS["object"]["real"], 5)
     object_image = draw_object_image(window, H, f, settings.COLORS["object"]["imaginary"], 5)
-    ray0 = draw_ray0(window, obj.p2, settings.COLORS["rays"]["ray0"], 1)
-    (ray1_1, ray1_2) = draw_ray1(
-        window, 
-        obj.p2, 
-        object_image.p2, 
-        settings.COLORS["rays"]["ray1_1"], 1,
-        settings.COLORS["rays"]["ray1_2"], 1
-        )
-    (focus_1, focus_2) = draw_focus(
-        window, 
-        F, 
-        settings.COLORS["focuses"]["focus_1"], 5,
-        settings.COLORS["focuses"]["focus_2"], 5,
-        5
-        )
+    (ray0, rayo_reflection) = draw_ray0(window, obj.p2, settings.COLORS["rays"]["ray0"], 1, settings.COLORS["rays"]["ray0_reflection"])
+    (ray1_1, ray1_2, ray1_reflection) = draw_ray1(window, obj.p2, object_image.p2, settings.COLORS["rays"]["ray1_1"], 1, settings.COLORS["rays"]["ray1_2"], 1, settings.COLORS["rays"]["ray1_reflection"], 1)
+    (focus_1, focus_2) = draw_focus(window, F, settings.COLORS["focuses"]["focus_1"], 5, settings.COLORS["focuses"]["focus_2"], 5, 5)
     
-
+    save(window, settings.FILE_NAME)
     window.getMouse()
     window.close()
 
