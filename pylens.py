@@ -1,3 +1,4 @@
+from ast import Str
 import settings as settings
 
 import graphics as graph
@@ -24,6 +25,42 @@ def draw_main_optical_axes(window, color="black", width=1):
     main_optical_axes.setWidth(width)
     main_optical_axes.draw(window)
     return main_optical_axes
+
+def draw_main_optical_axes_scale(window, phys_width, dashes, font_size, dash_size, color="black", width=1):
+    """Draw scale for main optical axes"""
+    for x in range(0,window.getWidth(), window.getWidth() // dashes):
+        dash = graph.Line(graph.Point(x, window.getHeight() // 2 - dash_size // 2),
+        graph.Point(x, window.getHeight() // 2 + dash_size // 2))
+        dash.setOutline(color=color)
+        dash.setWidth(width)
+        dash.draw(window)
+        text_scale = 1.1
+        text = graph.Text(
+            graph.Point(x, window.getHeight() // 2 + dash_size*text_scale // 2),
+            (f"{round(phys_width*x/window.getWidth() - phys_width/2, 1)}")
+        )
+        text.setOutline(color=color)
+        text.setSize(font_size)
+        text.draw(window)
+    return None
+
+def draw_lens_scale(window, phys_height, dashes, font_size, dash_size, color="black", width=1):
+    """Draw scale for main optical axes"""
+    for y in range(0,window.getHeight(), window.getHeight() // dashes):
+        dash = graph.Line(graph.Point(window.getWidth() // 2 - dash_size // 2, y),
+        graph.Point(window.getWidth() // 2 + dash_size // 2, y))
+        dash.setOutline(color=color)
+        dash.setWidth(width)
+        dash.draw(window)
+        text_scale = 1.1
+        text = graph.Text(
+            graph.Point(window.getWidth() // 2 + dash_size*text_scale // 2, y),
+            (f"{round(phys_height*y/window.getHeight() - phys_height/2, 1)}")
+        )
+        text.setOutline(color=color)
+        text.setSize(font_size)
+        text.draw(window)
+    return None
 
 def draw_lens(window, color="black", width=1,  k=0.9):
     """Draw lens
@@ -229,9 +266,9 @@ def main():
     scale_phys_height_to_frac = 1 / phys_height
     scale_phys_width_to_frac = 1 / phys_width
 
-    D = 2.5
+    D = 1.5
     F = thin_lens("F", D=D)
-    d = 0.3
+    d = 0.2
     f = thin_lens("f", D=D, d=d)
     h = 0.2
     H = thin_lens("H", D=D, f=f, d=d, h=h)
@@ -251,6 +288,8 @@ def main():
     # focus_point = graph.Point(F*window.getWidth()//2, window.getHeight() // 2)
 
     main_optical_axes = draw_main_optical_axes(window)
+    draw_main_optical_axes_scale(window, phys_width, 10, 7, window.getHeight() // 30, "green", 1)
+    draw_lens_scale(window, phys_height, 10, 7, window.getWidth() // 30, "green", 1)
     lens = draw_lens(window, settings.COLORS["lens"]["converging"], 3)
     obj = draw_object(window, h, d, settings.COLORS["object"]["real"], 5)
     object_image = draw_object_image(window, H, f, settings.COLORS["object"]["imaginary"], 5)
